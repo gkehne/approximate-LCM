@@ -1,1 +1,10 @@
-# 
+#approximate-LCM
+
+###Overview
+The least common multiple (LCM) of n integers x_1,... x_n is the smallest positive integer that is an integer multiple of every x_i. This definition is complicated when the x_i are allowed to be arbitrary real numbers, because if we keep "integer multiple" then the LCM will likely no longer exist, and if we say "real multiple" then it is not well-defined (there is no smallest positive real number). Here the 'approximate LCM' of some real x_i within some specified range is the real number within that range that comes closest to (from below) some integer multiple all x_i at once, where 'closest' is defined according to a specified cost function that is linear in x_i.
+
+###Motivation
+The motivating example is preparing a recipe. Suppose that I want somewhere between 100 and 200 chocolate chip cookies, but I want to have as little waste ingredients as possible, measured in terms of ingredient cost. The flour, butter, sugar, chocolate chips, etc are all sold in quantites that correspond to some real number multiple of chocolate chips, according to the specifics of my recipe. And although I can make 50\pi cookies, I cannot so easily buy \pi bags of chocolate chips. Given a .csv file that contains a table of the ingredients, the number of cookies that can be made with one unit of each, ingredient, and the price per cookie for each ingredient, this program returns the number of cookies you should make, the amount of each ingredient that should be purchased, the total cost, and the total waste. 
+
+###Soylent Example
+The example .csv that demonstrates the program is for making a soylent recipe. The cheapest way to purchase many of these ingredients is in bulk, but they tend not to appear in other common recipes, and so leftover ingredients will go to waste. Within reason, what amount of soylent leaves us with the least leftover ingredients? The data currently in LCMData.csv uses a recipe similar to the one that appears [here](https://diy.soylent.com/recipes/bulletproof-soylent-people-chow-with-oat-flour-similar-to-official-soylent).
