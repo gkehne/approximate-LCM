@@ -110,8 +110,9 @@ lines[0][10]=s #this is the aLCM
 lines[0][11]=round(cost,2) #total cost
 lines[0][12]=round(waste,2) #total waste
 
-#write the new rows back into the .csv file
-with open('ALCMData.csv', 'wb') as thefile:
+#write the new rows into the output .csv file, replace the header
+header[0]=["ingredient",  "index", "servings/block",  "price/serving", "min aLCM", "max aLCM", "", "units used", "cost","waste", "aLCM", "total cost", "total waste"]
+with open('ALCMOutput.csv', 'wb') as thefile:
   writer = csv.writer(thefile)
   writer.writerows(header)
   writer.writerows(lines)

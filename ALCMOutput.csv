@@ -1,0 +1,14 @@
+ingredient,index,servings/block,price/serving,min aLCM,max aLCM,,units used,cost,waste,aLCM,total cost,total waste
+Oat Flour,1,13.29931973,1.47,300,500,,35.0,684.25,0.92,464.84731,3443.12,45.09
+Vanilla Rice Protein,2,5.600574713,3.48,,,,83.0,1617.67,0.0,,,
+Maltodextrin,3,35.89393939,0.66,,,,13.0,307.97,1.17,,,
+Psyllium Husk Powder,4,129.9230769,0.13,,,,4.0,67.56,7.13,,,
+Potassium Citrate,5,52.4,0.4,,,,9.0,188.64,2.7,,,
+Calcium Citrate,6,66.47619048,0.21,,,,7.0,97.72,0.1,,,
+Iodized Salt,7,896,0.01,,,,1.0,8.96,4.31,,,
+Choline Bitartrate,8,234.25,0.08,,,,2.0,37.48,0.29,,,
+Magnesium Citrate,9,232.6666667,0.06,,,,2.0,27.92,0.03,,,
+Stevia Powder,10,328,0.07,,,,2.0,45.92,13.38,,,
+Xanthan Gum,11,799.5,0.02,,,,1.0,15.99,6.69,,,
+One Daily Superfood Multivitamin,12,30.28125,0.32,,,,16.0,155.04,6.29,,,
+Canola Oil,13,29.375,0.4,,,,16.0,188.0,2.06,,,
