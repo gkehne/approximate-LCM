@@ -20,107 +20,120 @@
 # the number of cookies you should make, the amount of each ingredient that
 # should be purchased, the total cost, and the total waste.
 #
-# TO USE: Enter your data in columns 1-4, and enter the minimum and maximum
-# values for the approximateLCM under the headings of column 5 and column 6.
-# The program will then populate columns 8-13 with the optimal proportions
-# and answers given the constraints.
+# TO USE: Enter your data in columns 1-4, of "ALCMData.csv", and enter the 
+# minimum and maximum values for the approximateLCM under the headings of 
+# column 5 and column 6. The program will then populate columns 8-13 with 
+# the optimal proportions and answers given the constraints.
 
 
 import csv
 from pulp import LpProblem, LpVariable, LpInteger, LpMinimize, value
 
-# makes the new LP Problem
-problem = LpProblem("Approximate LCM", LpMinimize)
 
-# Name of the CSV containing the input data (must be in the format provided):
-datafilename = "ALCMData.csv"
+# Reads in the data from the .csv file.
+# The CSV containing the input data must be in the format provided:
+def readfile(datafilename):
+    lines = []  # keep track of the lines from the CSV file
+    with open(datafilename, 'rU') as thefile:  # Open CSV file, read off lines
+        data_reader = csv.reader(thefile)
+        firstrow = True
+        for row in data_reader:
+            if not firstrow: #discard the header line
+                lines.append(row)
+            firstrow = False
+    return lines
 
-# reads the data from the CSV file into the LPP
-variables, ingredients, servingsPerBlock, costsPerServing = [], [], [], []
 
-lines = []  # keep track of the lines from the CSV file
-header = []  # keep track of header
-
-#  Open CSV file
-with open(datafilename, 'rU') as thefile:
-    data_reader = csv.reader(thefile)
-    firstrow = True
-    for row in data_reader:
-        if firstrow:
-            header.append(row)  # skip the row of column headers
-        else:
-            lines.append(row)
-            variables.append(LpVariable("x_" + row[1], 0, None, LpInteger))
-            ingredients.append(row[0])
-            servingsPerBlock.append(float(row[2]))
-            costsPerServing.append(float(row[3]))
-        firstrow = False
+# Runs the LPP, reading off data from the 'lines' list
+def runLPP(lines):
+    # reads the data from the CSV file into the LPP
+    variables, ingredients, servingsPerBlock, costsPerServing = [], [], [], []
+    
+    for row in lines:  # read in the variables from the lines
+        variables.append(LpVariable("x_" + row[1], 0, None, LpInteger))
+        ingredients.append(row[0])
+        servingsPerBlock.append(float(row[2]))
+        costsPerServing.append(float(row[3]))
     variables.append(LpVariable("s", 0))
 
-# read in the upper and lower bounds for aLCM
-minServe = lines[0][4]
-maxServe = lines[0][5]
+    # read in the upper and lower bounds for aLCM
+    minServe = lines[0][4]
+    maxServe = lines[0][5]
 
-# serving constraints: specifies the interval in which the approximate
-# LCM may lie
-min_constraint = variables[-1] >= float(minServe)
-max_constraint = variables[-1] <= float(maxServe)
-problem += min_constraint
-problem += max_constraint
+    # makes the new LP Problem
+    problem = LpProblem("Approximate LCM", LpMinimize)
 
-# block constraints: there must be enough of each ingredient for the ultimate
-# optimal number
-for v in range(len(variables) - 1):
-    min_constraint = variables[v] * servingsPerBlock[v] >= variables[-1]
+    # serving constraints: specifies the interval in which the approximate
+    # LCM may lie
+    min_constraint = variables[-1] >= float(minServe)
+    max_constraint = variables[-1] <= float(maxServe)
     problem += min_constraint
+    problem += max_constraint
 
-pps = 0.0  # price per serving
-for i in range(len(variables) - 1):
-    pps += costsPerServing[i]
+    # block constraints: there must be enough of each ingredient for the
+    # ultimate optimal number
+    for v in range(len(variables) - 1):
+        min_constraint = variables[v] * servingsPerBlock[v] >= variables[-1]
+        problem += min_constraint
 
-#  add objective function to be minimized (waste)
-obj_fn = 0 * variables[0]
-for i in range(len(variables) - 1):
-    obj_fn += variables[i] * costsPerServing[i] * servingsPerBlock[i]
-obj_fn -= variables[-1] * pps
-problem += obj_fn  # add the objective funciton to the problem
+    pps = 0.0  # price per serving
+    for i in range(len(variables) - 1):
+        pps += costsPerServing[i]
 
-problem.solve()  # runs the linear programming problem
+    #  add objective function to be minimized (waste)
+    obj_fn = 0 * variables[0]
+    for i in range(len(variables) - 1):
+        obj_fn += variables[i] * costsPerServing[i] * servingsPerBlock[i]
+    obj_fn -= variables[-1] * pps
+    problem += obj_fn  # add the objective funciton to the problem
+    problem.solve()  # runs the linear programming problem
 
-# read off the aLCM
-s = value(variables[-1])
+    return [variables, costsPerServing, obj_fn]
 
-mincost = 0.0
-for i in range(len(variables) - 1):
-    mincost += s * costsPerServing[i]
 
-waste = value(obj_fn)
-cost = waste + mincost
+# Reads off and calculates the output information from the solved LPP.
+def output(lines, variables, costsPerServing, obj_fn):
+    s = value(variables[-1])  # read off the aLCM
 
-# for row in lines: # make all rows the right length
-#   while len(row)<7: # for rows that were too short
-#     if firstrow:
-#       row+=[""]
-#     else:
-#      row+=["","",""]
-#  print row
+    mincost = 0.0
+    for i in range(len(variables) - 1):
+        mincost += s * costsPerServing[i]
 
-# add the output data to the rows that will be written to the .csv
-for row in lines:
-    row[7] = round(value(variables[int(row[1]) - 1]), 3)  # units of ing.s
-    row[8] = round(value(variables[int(row[1]) - 1]) *
-                   float(row[2]) * float(row[3]), 2)  # cost for each ing.
-    row[9] = round(float(row[8]) - s * float(row[3]), 2)  # waste for each
+    waste = value(obj_fn)
+    cost = waste + mincost
 
-lines[0][10] = s  # this is the aLCM
-lines[0][11] = round(cost, 2)  # total cost
-lines[0][12] = round(waste, 2)  # total waste
+    # add the output data to the rows that will be written to the .csv
+    for row in lines:
+        row[7] = round(value(variables[int(row[1]) - 1]), 3)  # units of ing.s
+        row[8] = round(value(variables[int(row[1]) - 1]) *
+                       float(row[2]) * float(row[3]), 2)  # cost for each ing.
+        row[9] = round(float(row[8]) - s * float(row[3]), 2)  # waste for each
+    lines[0][10] = s  # this is the aLCM
+    lines[0][11] = round(cost, 2)  # total cost
+    lines[0][12] = round(waste, 2)  # total waste
+    return lines
 
-# write the new rows into the output .csv file, replace the header
-header[0] = ["ingredient", "index", "servings/block", "price/serving",
-             "min aLCM", "max aLCM", "", "units used", "cost", "waste",
-             "aLCM", "total cost", "total waste"]
-with open('ALCMOutput.csv', 'wb') as thefile:
-    writer = csv.writer(thefile)
-    writer.writerows(header)
-    writer.writerows(lines)
+
+# This writes the lines containing the output data to "ALCMOutput.csv"
+def writefile(lines, outputname):
+    # write the new rows into the output .csv file, replace the header
+    header = ["ingredient", "index", "servings/block", "price/serving",
+                 "min aLCM", "max aLCM", "", "units used", "cost", "waste",
+                 "aLCM", "total cost", "total waste"]
+    with open(outputname, 'wb') as thefile:
+        writer = csv.writer(thefile)
+        writer.writerows([header])
+        writer.writerows(lines)
+
+
+# This is the main method. It reads the csv data, uses it for the LPP, creates
+# output csv based on the solution of the LPP, and writes that output to file
+def main(dataname, outputname):
+    lines=readfile(dataname)
+    [variables, costsPerServing, obj_fn] = runLPP(lines)
+    lines = output(lines, variables, costsPerServing, obj_fn)
+    writefile(lines, outputname)
+
+# Default program behavior
+if __name__ == '__main__':
+    main("ALCMData.csv", "ALCMData_output.csv")
